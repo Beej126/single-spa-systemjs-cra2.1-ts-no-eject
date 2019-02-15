@@ -1,0 +1,85 @@
+resources:
+
+- repo: self
+  clean: true
+  
+queue:
+
+  name: Hosted VS2017
+  demands: 
+  - msbuild
+  - visualstudio
+  - vstest
+
+name: $(SourceBranchName)-$(date:yyyyMMdd)$(rev:.r)
+
+trigger:
+
+  branches:
+
+    include:
+    - master
+    - staging
+    - uat
+    - test
+    - dev
+
+  paths:
+
+    include:
+    - $(BuildPath)/*
+  
+variables:
+
+  BuildConfiguration: 'release'
+  BuildPlatform: 'any cpu'
+  BuildPath: 'KC.Lims.Spa.ProjectManagement'
+
+steps:
+
+- task: geeklearningio.gl-vsts-tasks-yarn.yarn-installer-task.YarnInstaller@2
+  displayName: 'Use Yarn 1.x'
+  inputs:
+  
+    versionSpec: 1.x
+
+    checkLatest: true
+
+    includePrerelease: false
+
+
+- task: geeklearningio.gl-vsts-tasks-yarn.yarn-task.Yarn@2
+  displayName: 'Yarn Install'
+  inputs:
+  
+    ProjectDirectory: '$(BuildPath)'
+
+    customRegistry: useFeed
+
+    customFeed: 'c77d7fdc-516a-4f40-b609-22c0832b2c01'
+
+
+- powershell: yarn run build
+  displayName: 'Yarn Run Build'
+  workingDirectory: '$(BuildPath)'
+
+- task: CopyFiles@2
+  displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
+  inputs:
+  
+    SourceFolder: '$(Build.SourcesDirectory)\$(BuildPath)\build'
+
+    contents: '**' 
+    
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: drop'
+  inputs:
+  
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)' 
+    
+    artifactName: 'project-management'
+    
+    publishLocation: 'Container'
