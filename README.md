@@ -1,5 +1,5 @@
 # single-spa-systemjs-cra2.1-ts-no-eject
-Single-SPA sample using SystemJS for the remote subspa bundle.js imports
+[single-spa](https://single-spa.js.org/) sample using SystemJS for the remote subspa bundle.js imports
 
 # Highlights
 - single-spa container starting point: main/src/index.tsx
